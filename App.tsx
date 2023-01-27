@@ -1,12 +1,18 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { useCallback, useEffect, useState } from "react";
 
-import { StatusBar } from 'expo-status-bar';
+import { NativeBaseProvider } from "native-base";
 
-import * as Font from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from "expo-status-bar";
+import * as Font from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
 
-import { Roboto_400Regular, Roboto_700Bold } from '@expo-google-fonts/roboto';
+import { Roboto_400Regular, Roboto_700Bold } from "@expo-google-fonts/roboto";
+
+import { SignIn } from "screens/SignIn";
+import { SignUp } from "screens/SignUp";
+import { Loading } from "components/Loading";
+
+import { theme } from "theme";
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
@@ -36,17 +42,9 @@ export default function App() {
   }
 
   return (
-    <View
-      onLayout={onLayoutRootView}
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#202024',
-      }}
-    >
-      <Text>Hello world</Text>
-      <StatusBar style='light' backgroundColor='transparent' />
-    </View>
+    <NativeBaseProvider theme={theme}>
+      <SignUp />
+      <StatusBar style="light" backgroundColor="transparent" />
+    </NativeBaseProvider>
   );
 }
