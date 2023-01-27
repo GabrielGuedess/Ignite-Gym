@@ -8,9 +8,7 @@ import * as SplashScreen from "expo-splash-screen";
 
 import { Roboto_400Regular, Roboto_700Bold } from "@expo-google-fonts/roboto";
 
-import { SignIn } from "screens/SignIn";
-import { SignUp } from "screens/SignUp";
-import { Loading } from "components/Loading";
+import { Routes } from "routes";
 
 import { theme } from "theme";
 
@@ -43,7 +41,7 @@ export default function App() {
 
   return (
     <NativeBaseProvider theme={theme}>
-      <SignUp />
+      <Routes onReady={onLayoutRootView} />
       <StatusBar style="light" backgroundColor="transparent" />
     </NativeBaseProvider>
   );
