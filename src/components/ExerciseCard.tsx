@@ -14,7 +14,7 @@ export const ExerciseCard = ({ ...props }: ExerciseCard) => (
           uri: "http://conteudo.imguol.com.br/c/entretenimento/0c/2019/12/03/remada-unilateral-com-halteres-1575402100538_v2_600x600.jpg",
         }}
         alt="Imagem do exercício"
-        resizeMode="center"
+        resizeMode="cover"
         w={16}
         h={16}
         rounded="md"
