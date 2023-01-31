@@ -18,7 +18,7 @@ export function Routes({ onReady }: RoutesProps) {
   return (
     <Box flex={1} bg="gray.700">
       <NavigationContainer theme={theme} onReady={onReady}>
-        <AppRoutes />
+        <AuthRoutes />
       </NavigationContainer>
     </Box>
   );

@@ -16,6 +16,7 @@ export const HistoryCard = () => (
         color="white"
         fontSize="md"
         textTransform="capitalize"
+        fontFamily="heading"
         numberOfLines={1}
       >
         Costas
