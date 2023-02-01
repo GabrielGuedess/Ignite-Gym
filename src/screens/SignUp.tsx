@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   VStack,
   Image,
@@ -5,13 +7,15 @@ import {
   Center,
   Heading,
   ScrollView,
-  useToast,
+  Toast,
 } from "native-base";
 
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigation } from "@react-navigation/native";
+
+import { useAuth } from "hooks/useAuth";
 
 import { Input } from "components/Input";
 import { Button } from "components/Button";
@@ -51,25 +55,30 @@ export const SignUp = () => {
     resolver: yupResolver(signUpSchema),
   });
 
-  const toast = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
   const { goBack } = useNavigation();
+  const { signIn } = useAuth();
 
   async function handleSignUp({ email, name, password }: SignUpProps) {
     try {
-      const { data } = await api.post("/users", { email, name, password });
+      setIsLoading(true);
+      await api.post("/users", { email, name, password });
 
-      console.log(data);
+      await signIn(email, password);
     } catch (error) {
       const title =
         error instanceof AppError
           ? error.message
           : "Não foi possível criar a conta.";
 
-      toast.show({
+      Toast.show({
         title,
         placement: "top",
         bgColor: "red.500",
       });
+
+      setIsLoading(false);
     }
   }
 
@@ -163,6 +172,7 @@ export const SignUp = () => {
           <Button
             title="Criar e acessar"
             onPress={handleSubmit(handleSignUp)}
+            isLoading={isLoading}
           />
         </Center>
 

@@ -10,6 +10,8 @@ import { Roboto_400Regular, Roboto_700Bold } from "@expo-google-fonts/roboto";
 
 import { Routes } from "routes";
 
+import { AuthContextProvider } from "contexts/AuthContext";
+
 import { theme } from "theme";
 
 export default function App() {
@@ -41,8 +43,11 @@ export default function App() {
 
   return (
     <NativeBaseProvider theme={theme}>
-      <Routes onReady={onLayoutRootView} />
       <StatusBar style="light" backgroundColor="transparent" />
+
+      <AuthContextProvider>
+        <Routes onReady={onLayoutRootView} />
+      </AuthContextProvider>
     </NativeBaseProvider>
   );
 }
