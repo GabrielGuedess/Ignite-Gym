@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Alert, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 
+import * as Yup from "yup";
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 
@@ -11,23 +12,99 @@ import {
   Skeleton,
   Text,
   Heading,
-  useToast,
+  Toast,
 } from "native-base";
+
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+import { useAuth } from "hooks/useAuth";
 
 import { Input } from "components/Input";
 import { Button } from "components/Button";
 import { UserPhoto } from "components/UserPhoto";
 import { ScreenHeader } from "components/ScreenHeader";
 
+import { api } from "services/api";
+
+import { AppError } from "utils/AppError";
+
 const photoSize = 33;
+
+type ProfileProps = Record<
+  "name" | "email" | "password" | "old_password" | "confirm_password",
+  string
+>;
+
+const profileSchema = Yup.object({
+  name: Yup.string().required("Informe o nome."),
+  password: Yup.string()
+    .min(6, "A senha deve ter no mínimo 6 dígitos.")
+    .nullable()
+    .transform((value) => (!!value ? value : null)),
+  confirm_password: Yup.string()
+    .nullable()
+    .transform((value) => (!!value ? value : null))
+    .oneOf([Yup.ref("password"), null], "Senhas não iguais.")
+    .when("password", {
+      is: (Field: any) => Field,
+      then: Yup.string()
+        .nullable()
+        .required("Informe a confirmação da senha.")
+        .transform((value) => (!!value ? value : null)),
+    }),
+});
 
 export const Profile = () => {
   const [userPhoto, setUserPhoto] = useState(
     "https://github.com/GabrielGuedess.png"
   );
+  const [isUpdating, setIsUpdating] = useState(false);
   const [photoIsLoading, setPhotoIsLoading] = useState(false);
 
-  const toast = useToast();
+  const { user, updateUserProfile } = useAuth();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ProfileProps>({
+    resolver: yupResolver(profileSchema),
+    defaultValues: {
+      name: user.name,
+      email: user.email,
+    },
+  });
+
+  async function handleProfileUpdate(data: ProfileProps) {
+    try {
+      setIsUpdating(true);
+
+      const userUpdated = user;
+      userUpdated.name = data.name;
+
+      await api.put("/users", data);
+      await updateUserProfile(userUpdated);
+
+      Toast.show({
+        title: "Perfil atualizado com sucesso!",
+        placement: "top",
+        bgColor: "green.700",
+      });
+    } catch (error) {
+      const title =
+        error instanceof AppError
+          ? error.message
+          : "Não foi possível atualizar os dados.";
+
+      Toast.show({
+        title,
+        placement: "top",
+        bgColor: "red.500",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  }
 
   async function handleUserPhotoSelect() {
     try {
@@ -50,7 +127,7 @@ export const Profile = () => {
         );
 
         if (size && size / 1024 / 1024 > 5) {
-          return toast.show({
+          return Toast.show({
             title: "Essa imagem é muito grande. Escolha uma de até 5MB",
             placement: "top",
             bgColor: "red.500",
@@ -100,8 +177,33 @@ export const Profile = () => {
             </Text>
           </TouchableOpacity>
 
-          <Input placeholder="Nome" bg="gray.600" />
-          <Input placeholder="E-mail" bg="gray.600" isDisabled />
+          <Controller
+            control={control}
+            name="name"
+            render={({ field: { onChange, value } }) => (
+              <Input
+                placeholder="Nome"
+                bg="gray.600"
+                onChangeText={onChange}
+                value={value}
+                errorMessage={errors.name?.message}
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, value } }) => (
+              <Input
+                placeholder="E-mail"
+                bg="gray.600"
+                isDisabled
+                onChangeText={onChange}
+                value={value}
+              />
+            )}
+          />
 
           <Heading
             alignSelf="flex-start"
@@ -114,11 +216,53 @@ export const Profile = () => {
             Alterar senha
           </Heading>
 
-          <Input placeholder="Senha antiga" bg="gray.600" secureTextEntry />
-          <Input placeholder="Nova senha" bg="gray.600" secureTextEntry />
-          <Input placeholder="Confirmar senha" bg="gray.600" secureTextEntry />
+          <Controller
+            control={control}
+            name="old_password"
+            render={({ field: { onChange } }) => (
+              <Input
+                placeholder="Senha antiga"
+                bg="gray.600"
+                secureTextEntry
+                onChangeText={onChange}
+              />
+            )}
+          />
 
-          <Button title="Atualizar" mt={4} />
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange } }) => (
+              <Input
+                placeholder="Nova senha"
+                bg="gray.600"
+                secureTextEntry
+                onChangeText={onChange}
+                errorMessage={errors.password?.message}
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="confirm_password"
+            render={({ field: { onChange } }) => (
+              <Input
+                placeholder="Confirmar senha"
+                bg="gray.600"
+                secureTextEntry
+                onChangeText={onChange}
+                errorMessage={errors.confirm_password?.message}
+              />
+            )}
+          />
+
+          <Button
+            title="Atualizar"
+            mt={4}
+            isLoading={isUpdating}
+            onPress={handleSubmit(handleProfileUpdate)}
+          />
         </Center>
       </ScrollView>
     </VStack>
