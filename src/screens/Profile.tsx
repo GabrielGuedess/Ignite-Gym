@@ -25,6 +25,8 @@ import { Button } from "components/Button";
 import { UserPhoto } from "components/UserPhoto";
 import { ScreenHeader } from "components/ScreenHeader";
 
+import UserPhotoDefault from "assets/userPhotoDefault.png";
+
 import { api } from "services/api";
 
 import { AppError } from "utils/AppError";
@@ -56,9 +58,6 @@ const profileSchema = Yup.object({
 });
 
 export const Profile = () => {
-  const [userPhoto, setUserPhoto] = useState(
-    "https://github.com/GabrielGuedess.png"
-  );
   const [isUpdating, setIsUpdating] = useState(false);
   const [photoIsLoading, setPhotoIsLoading] = useState(false);
 
@@ -134,7 +133,37 @@ export const Profile = () => {
           });
         }
 
-        setUserPhoto(photoSelected.assets[0].uri);
+        const fileExtension = photoSelected.assets[0].uri.split(".").pop();
+
+        const photoFile = {
+          name: `${user.name}.${fileExtension}`.toLocaleLowerCase(),
+          uri: photoSelected.assets[0].uri,
+          type: `${photoSelected.assets[0].type}/${fileExtension}`,
+        } as any;
+
+        const userPhotoUploadForm = new FormData();
+        userPhotoUploadForm.append("avatar", photoFile);
+
+        const { data } = await api.patch<{ avatar: string }>(
+          "/users/avatar",
+          userPhotoUploadForm,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        const userUpdated = user;
+        userUpdated.avatar = data.avatar;
+
+        await updateUserProfile(userUpdated);
+
+        Toast.show({
+          title: "Foto de perfil atualizado com sucesso!",
+          placement: "top",
+          bgColor: "green.700",
+        });
       }
     } catch (error) {
       console.error(error);
@@ -160,7 +189,11 @@ export const Profile = () => {
           ) : (
             <UserPhoto
               size={photoSize}
-              source={{ uri: userPhoto }}
+              source={
+                user.avatar
+                  ? { uri: `${api.defaults.baseURL}/avatar/${user.avatar}` }
+                  : UserPhotoDefault
+              }
               alt="Foto do usuário"
             />
           )}
