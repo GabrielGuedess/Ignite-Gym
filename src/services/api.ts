@@ -1,5 +1,4 @@
 import axios from "axios";
-
 import { AppError } from "utils/AppError";
 
 export const api = axios.create({
