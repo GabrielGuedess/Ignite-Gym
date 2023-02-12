@@ -4,8 +4,8 @@ export type ExerciseDTO = {
   group: string;
   name: string;
   repetitions: string;
-  series: number;
   thumb: string;
+  series: number;
   created_at: Date;
   updated_at: Date;
 };
