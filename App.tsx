@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { NativeBaseProvider } from "native-base";
 
 import { StatusBar } from "expo-status-bar";
+
 import * as Font from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 
